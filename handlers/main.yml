@@ -3,3 +3,15 @@
     name: mariadb
     state: restarted
   become: true
+
+- name: restart apache2 service
+  systemd:
+    name: apache2
+    state: restarted
+  become: true
+
+- name: restart snmpd service
+  systemd:
+    name: snmpd
+    state: restarted
+  become: true
