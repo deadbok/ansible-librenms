@@ -1,5 +1,6 @@
 librenms_ip: "{{ ansible_host }}"
 librenms_user: librenms
+librenms_group: librenms
 librenms_db_pass: changeme
 librenms_db_root_pass: changeme
 
@@ -11,4 +12,4 @@ snmp_community: librenms
 
 monitor_admin_email: root@localhost
 monitor_admin_name: Local root user
-monitor_location: Smith Residence, Washington, USA, Earth, C34 
+monitor_location: Smith Residence, Washington, USA, Earth, C34
