@@ -102,7 +102,6 @@
     dest: /etc/php/7.0/apache2/php.ini
   become: yes
 
-
 - name: Disable apache modules.
   apache2_module:
     state: absent
@@ -228,4 +227,33 @@
   template:
     src: config.php.j2
     dest: /opt/librenms/config.php
+  become: yes
+
+- name: Initialise the librenms database
+  shell: "php build-base.php"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Create librenms admin user
+  shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
+  args:
+    chdir: /opt/librenms
+
+- name: Validate the librenms install
+  shell: "php validate.php"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Add localhost to monitored devices
+  shell: "php addhost.php localhost public v2c"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Discover localhost
+  shell: "php discovery.php -h all"
+  args:
+    chdir: /opt/librenms
   become: yes

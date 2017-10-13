@@ -1,8 +1,14 @@
 librenms_ip: "{{ ansible_host }}"
+
 librenms_user: librenms
 librenms_group: librenms
+librenms_pass: changeme
+
 librenms_db_pass: changeme
 librenms_db_root_pass: changeme
+
+librenms_admin_user: admin
+librenms_admin_pass: changeme
 
 librenms_timezone: Europe/Copenhagen
 
