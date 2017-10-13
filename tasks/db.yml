@@ -79,15 +79,28 @@
   notify:
     - restart database service
 
-Ensure date.timezone is set in php.ini to your preferred time zone. See http://php.net/manual/en/timezones.php for a list of supported timezones. Valid examples are: "America/New_York", "Australia/Brisbane", "Etc/UTC".
+- name: Set time zone for php cli
+  template:
+    src: php-ini-cli.j2
+    dest: /etc/php/7.0/cli/php.ini
 
-vi /etc/php/7.0/apache2/php.ini
-vi /etc/php/7.0/cli/php.ini
+- name: Set time zone for php apache2
+  template:
+    src: php-ini-apache2.j2
+    dest: /etc/php/7.0/apache2/php.ini
 
-a2enmod php7.0
-a2dismod mpm_event
-a2enmod mpm_prefork
-phpenmod mcrypt
+- name: Enable apache modules.
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - php7.0
+    - mpm_event
+    - mpm_prefork
+
+- name: Enale PHP modules.
+  shell: phpenmod mcrypt
+
 
 Configure Apache
 
