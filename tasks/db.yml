@@ -65,20 +65,19 @@
     state: import
     target: /tmp/librenms.sql
 
-vi /etc/mysql/mariadb.conf.d/50-server.cnf
-
-    NOTE: Whilst we are working on ensuring LibreNMS is compatible with MySQL strict mode, for now, please disable this after mysql is installed.
-
-Within the [mysqld] section please add:
-
-innodb_file_per_table=1
-sql-mode=""
-lower_case_table_names=0
-
-systemctl restart mysql
-
-Web Server
-Configure PHP
+- name: Disable database strict mode
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^{{ item }}'
+    insertafter: '^[mysqld]'
+    line: '{{ item }}'
+  with_items:
+    - 'innodb_file_per_table=1'
+    - 'sql-mode=""'
+    - 'lower_case_table_names=0'
+  notify:
+    - restart database service
 
 Ensure date.timezone is set in php.ini to your preferred time zone. See http://php.net/manual/en/timezones.php for a list of supported timezones. Valid examples are: "America/New_York", "Australia/Brisbane", "Etc/UTC".
 

@@ -1,0 +1,5 @@
+- name: restart database service
+  systemd:
+    name: mariadb
+    state: restarted
+  become: true
