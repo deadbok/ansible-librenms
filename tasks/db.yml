@@ -1,0 +1,11 @@
+- name: Install MariaDB
+  apt:
+    name: mariadb-server mariadb-client
+    state: latest
+  become: true
+
+- name: Create the LibreNMS database
+  mysql_db:
+    state: import
+    name: all
+    target: librenms.sql
