@@ -1,8 +1,159 @@
-- name: Install MariaDB
+- name: Install dependencies
   apt:
-    name: mariadb-server mariadb-client
+    name: "{{ item }}"
     state: latest
   become: true
+  with_items:
+    - apache2
+    - composer
+    - fping
+    - git
+    - graphviz
+    - imagemagick
+    - libapache2-mod-php7.0
+    - mariadb-client
+    - mariadb-server
+    - mtr-tiny
+    - nmap
+    - php7.0-cli
+    - php7.0-curl
+    - php7.0-gd
+    - php7.0-json
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-snmp
+    - php7.0-xml
+    - php7.0-zip
+    - python-memcache
+    - python-mysqldb
+    - rrdtool
+    - snmp
+    - snmpd
+    - whois
+
+- name: Add librenms user
+  user:
+    name: librenms
+    createhome: no
+    group: www-data
+    home: /opt/librenms
+    system: yes
+
+- name: Clone LibreNMS from github
+  git:
+    repo: https://github.com/librenms/librenms.git
+    dest: /opt/librenms
+
+- name: Set root user password
+    mysql_user:
+      name: root
+      host: "{{ item }}"
+      password: "{{ librenms_db_root_pass }}"
+      check_implicit_admin: yes
+      state: present
+    with_items:
+      - 127.0.0.1
+      - ::1
+
+- name: Create initial SQL setup statements
+  template:
+    src: librenms.j2
+    dest: /tmp/librenms/librenms.sql
+
+- name: Create librenms database
+  mysql_db:
+    state: import
+    target: /tmp/librenms.sql
+
+vi /etc/mysql/mariadb.conf.d/50-server.cnf
+
+    NOTE: Whilst we are working on ensuring LibreNMS is compatible with MySQL strict mode, for now, please disable this after mysql is installed.
+
+Within the [mysqld] section please add:
+
+innodb_file_per_table=1
+sql-mode=""
+lower_case_table_names=0
+
+systemctl restart mysql
+
+Web Server
+Configure PHP
+
+Ensure date.timezone is set in php.ini to your preferred time zone. See http://php.net/manual/en/timezones.php for a list of supported timezones. Valid examples are: "America/New_York", "Australia/Brisbane", "Etc/UTC".
+
+vi /etc/php/7.0/apache2/php.ini
+vi /etc/php/7.0/cli/php.ini
+
+a2enmod php7.0
+a2dismod mpm_event
+a2enmod mpm_prefork
+phpenmod mcrypt
+
+Configure Apache
+
+vi /etc/apache2/sites-available/librenms.conf
+
+Add the following config, edit ServerName as required:
+
+<VirtualHost *:80>
+  DocumentRoot /opt/librenms/html/
+  ServerName  librenms.example.com
+
+  AllowEncodedSlashes NoDecode
+  <Directory "/opt/librenms/html/">
+    Require all granted
+    AllowOverride All
+    Options FollowSymLinks MultiViews
+  </Directory>
+</VirtualHost>
+
+    NOTE: If this is the only site you are hosting on this server (it should be :)) then you will need to disable the default site. a2dissite 000-default
+
+a2ensite librenms.conf
+a2enmod rewrite
+systemctl restart apache2
+
+Configure snmpd
+
+cp /opt/librenms/snmpd.conf.example /etc/snmp/snmpd.conf
+vi /etc/snmp/snmpd.conf
+
+Edit the text which says RANDOMSTRINGGOESHERE and set your own community string.
+
+curl -o /usr/bin/distro https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro
+chmod +x /usr/bin/distro
+systemctl restart snmpd
+
+Cron job
+
+cp /opt/librenms/librenms.nonroot.cron /etc/cron.d/librenms
+
+Copy logrotate config
+
+LibreNMS keeps logs in /opt/librenms/logs. Over time these can become large and be rotated out. To rotate out the old logs you can use the provided logrotate config file:
+
+cp /opt/librenms/misc/librenms.logrotate /etc/logrotate.d/librenms
+
+Set permissions
+
+chown -R librenms:librenms /opt/librenms
+setfacl -d -m g::rwx /opt/librenms/rrd /opt/librenms/logs
+setfacl -R -m g::rwx /opt/librenms/rrd /opt/librenms/logs
+
+Web installer
+
+Now head to the web installer and follow the on-screen instructions.
+
+http://librenms.example.com/install.php
+
+Final steps
+
+Run validate.php as root in the librenms directory:
+
+cd /opt/librenms
+./validate.php
+
 
 - name: Create the LibreNMS database
   mysql_db:

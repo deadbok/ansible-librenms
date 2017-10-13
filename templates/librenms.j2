@@ -1,7 +1,6 @@
 CREATE DATABASE librenms;
 GRANT ALL PRIVILEGES ON librenms.*
-  TO 'librenms'@'<ip>'
-  IDENTIFIED BY '<password>'
+  TO 'librenms'@'{{ librenms_ip }}'
+  IDENTIFIED BY '{{ librenms_db_pass }}'
 ;
 FLUSH PRIVILEGES;
-exit
