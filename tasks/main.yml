@@ -1,1 +1,259 @@
-- include: db.yml
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  become: yes
+  with_items:
+    - acl
+    - apache2
+    - composer
+    - fping
+    - git
+    - graphviz
+    - imagemagick
+    - libapache2-mod-php7.0
+    - logrotate
+    - mariadb-client
+    - mariadb-server
+    - mtr-tiny
+    - nmap
+    - php7.0-cli
+    - php7.0-curl
+    - php7.0-gd
+    - php7.0-json
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-snmp
+    - php7.0-xml
+    - php7.0-zip
+    - python-memcache
+    - python-mysqldb
+    - rrdtool
+    - snmp
+    - snmpd
+    - whois
+
+- name: Add librenms group
+  group:
+    name: "{{ librenms_group }}"
+    state: present
+  become: yes
+
+- name: Add librenms user
+  user:
+    name: "{{ librenms_user }}"
+    createhome: no
+    group: "{{ librenms_group }}"
+    groups: www-data
+    home: /opt/librenms
+    system: yes
+  become: yes
+
+- name: Clone librenms from github
+  git:
+    repo: https://github.com/librenms/librenms.git
+    dest: /opt/librenms
+  become: yes
+
+- name: Create initial SQL setup statements
+  template:
+    src: librenms.sql.j2
+    dest: /tmp/librenms.sql
+
+- name: Create librenms database
+  mysql_db:
+    name: librenms
+    state: present
+  become: yes
+  register: db_created
+
+- name: Import librenms database statements
+  mysql_db:
+    name: librenms
+    state: import
+    target: /tmp/librenms.sql
+  become: yes
+  when: db_created.changed
+
+- name: Disable database strict mode
+  lineinfile:
+    name: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^{{ item }}'
+    insertafter: '^[mysqld]'
+    line: '{{ item }}'
+  become: yes
+  with_items:
+    - 'innodb_file_per_table=1'
+    - 'sql-mode=""'
+    - 'lower_case_table_names=0'
+  notify:
+    - restart database service
+
+- name: Set time zone for php cli
+  template:
+    src: php-cli.ini.j2
+    dest: /etc/php/7.0/cli/php.ini
+  become: yes
+
+- name: Set time zone for php apache2
+  template:
+    src: php-apache2.ini.j2
+    dest: /etc/php/7.0/apache2/php.ini
+  become: yes
+
+- name: Disable apache modules.
+  apache2_module:
+    state: absent
+    name: "{{ item }}"
+  with_items:
+    - mpm_event
+  notify:
+    - restart apache2 service
+  become: yes
+
+- name: Enable apache modules.
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - php7.0
+    - mpm_prefork
+    - rewrite
+  notify:
+    - restart apache2 service
+  become: yes
+
+- name: Enale PHP modules.
+  shell: phpenmod mcrypt
+  notify:
+    - restart apache2 service
+  become: yes
+
+- name: Create apache2 site configuration
+  template:
+    src: librenms-apache.conf.j2
+    dest: /etc/apache2/sites-available/librenms.conf
+  become: yes
+
+- name: Enable librenms apache2 site
+  shell: a2ensite librenms.conf
+  notify:
+    - restart apache2 service
+  become: yes
+
+- name: Disable apache2 default site
+  shell: a2dissite 000-default
+  notify:
+    - restart apache2 service
+  become: yes
+
+- name: Create SNMPd configuration
+  template:
+    src: snmpd.conf.j2
+    dest: /etc/snmp/snmpd.conf
+  notify:
+    - restart snmpd service
+  become: yes
+
+- name: Download distribution detection script
+  get_url:
+    url: https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro
+    dest: /usr/bin/distro
+    mode: 0751
+  become: yes
+  notify:
+    - restart snmpd service
+
+- name: Add cron job
+  copy:
+    src: /opt/librenms/librenms.nonroot.cron
+    dest: /etc/cron.d/librenms
+    remote_src: yes
+  become: yes
+
+- name: Add logrotate configuration
+  copy:
+    src: /opt/librenms/misc/librenms.logrotate
+    dest: /etc/logrotate.d/librenms
+    remote_src: yes
+  become: yes
+
+- name: Create rrd and logs directories
+  file:
+    group: "{{ librenms_group }}"
+    owner: "{{ librenms_user }}"
+    path: "/opt/librenms/{{ item }}"
+    state: directory
+  become: yes
+  with_items:
+    - logs
+    - rrd
+
+- name: Set librenms user as owner of /opt/librenms and below
+  file:
+    group: "{{ librenms_group }}"
+    owner: "{{ librenms_user }}"
+    path: /opt/librenms
+    recurse: yes
+    state: directory
+  become: yes
+
+- name: Set acl permissions
+  acl:
+    path: "{{ item }}"
+    etype: group
+    permissions: rwx
+    default: yes
+    state: present
+  become: yes
+  with_items:
+    - /opt/librenms/rrd
+    - /opt/librenms/logs
+
+- name: Set acl permissions
+  acl:
+    path: "{{ item }}"
+    etype: group
+    permissions: rwx
+    recursive: yes
+    state: present
+  become: yes
+  with_items:
+    - /opt/librenms/rrd
+    - /opt/librenms/logs
+
+- name: Create librenms configuration
+  template:
+    src: config.php.j2
+    dest: /opt/librenms/config.php
+  become: yes
+
+- name: Initialise the librenms database
+  shell: "php build-base.php"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Create librenms admin user
+  shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
+  args:
+    chdir: /opt/librenms
+
+- name: Validate the librenms install
+  shell: "php validate.php"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Add localhost to monitored devices
+  shell: "php addhost.php localhost public v2c"
+  args:
+    chdir: /opt/librenms
+  become: yes
+
+- name: Discover localhost
+  shell: "php discovery.php -h all"
+  args:
+    chdir: /opt/librenms
+  become: yes

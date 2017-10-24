@@ -1,8 +1,5 @@
-librenms_ip: "{{ ansible_host }}"
-
 librenms_user: librenms
 librenms_group: librenms
-librenms_pass: changeme
 
 librenms_db_pass: changeme
 librenms_db_root_pass: changeme
