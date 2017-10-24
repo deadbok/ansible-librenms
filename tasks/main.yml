@@ -246,10 +246,11 @@
     chdir: /opt/librenms
   become: yes
 
-- name: Add localhost to monitored devices
+- name: Add localhost to monitored devices (Ignore errors wbout existing hosts)
   shell: "php addhost.php localhost public v2c"
   args:
     chdir: /opt/librenms
+  ignore_errors: yes
   become: yes
 
 - name: Discover localhost
