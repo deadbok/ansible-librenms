@@ -160,7 +160,7 @@
   get_url:
     url: https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro
     dest: /usr/bin/distro
-    mode: 0751
+    mode: 0755
   become: yes
   notify:
     - restart snmpd service
