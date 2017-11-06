@@ -22,7 +22,9 @@ monitor_location: Smith Residence, Washington, USA, Earth, C34
 # auto discovery network
 snmp_network: 127.0.0.1/32
 
-
+# component control
 install_apache: True
 install_librenms: True
 update_librenms: True
+install_snmp: True
+install_mariadb: True

@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   # spin up vms
-  vms = ['srv-librenms']
+  vms = ['srv-librenms', 'srv-snmpd']
   vms.each do |server_name|
     config.vm.define server_name do |machine|
           machine.vm.hostname = server_name

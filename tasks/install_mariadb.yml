@@ -1,0 +1,21 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-client
+    - mariadb-server
+
+- name: Disable database strict mode
+  lineinfile:
+    name: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^{{ item }}'
+    insertafter: '^[mysqld]'
+    line: '{{ item }}'
+  with_items:
+    - 'innodb_file_per_table=1'
+    - 'sql-mode=""'
+    - 'lower_case_table_names=1'
+  notify:
+    - restart database service

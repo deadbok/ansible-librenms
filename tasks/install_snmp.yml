@@ -1,0 +1,23 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  become: yes
+  with_items:
+    - snmp
+    - snmpd
+
+- name: Create SNMPd configuration
+  template:
+    src: snmpd.conf.j2
+    dest: /etc/snmp/snmpd.conf
+  notify:
+    - restart snmpd service
+
+- name: Download distribution detection script
+  get_url:
+    url: https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro
+    dest: /usr/bin/distro
+    mode: 0755
+  notify:
+    - restart snmpd service
