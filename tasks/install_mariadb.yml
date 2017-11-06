@@ -1,0 +1,14 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-client
+    - mariadb-server
+
+- name: allow lower case table names
+  replace:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^lower_case_table_names=0'
+    replace: 'lower_case_table_names=1'
+  notify: restart mariadb

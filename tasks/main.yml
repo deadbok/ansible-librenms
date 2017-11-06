@@ -10,14 +10,18 @@
     - graphviz
     - imagemagick
     - logrotate
-    - mariadb-client
-    - mariadb-server
     - mtr-tiny
     - nmap
     - python-memcache
     - python-mysqldb
     - rrdtool
     - whois
+
+- name: install mariadb
+  include: install_mariadb.yml
+  become: yes
+  when: install_mariadb
+  tags: mariadb
 
 - name: install apache and php
   include: install_apache.yml

@@ -27,3 +27,4 @@ install_apache: True
 install_librenms: True
 update_librenms: True
 install_snmp: True
+install_mariadb: True
