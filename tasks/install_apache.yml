@@ -1,4 +1,4 @@
-- name: Install dependencies
+- name: Install apache2 and dependencies
   apt:
     name: "{{ item }}"
     state: latest
