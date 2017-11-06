@@ -1,0 +1,8 @@
+- hosts: all
+  become: true
+
+  vars:
+  - snmp_network: 192.168.121.0/8
+  
+  roles:
+    - server-librenms

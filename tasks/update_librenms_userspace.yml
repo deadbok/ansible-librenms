@@ -1,0 +1,30 @@
+- name: Create librenms configuration
+  template:
+    src: config.php.j2
+    dest: /opt/librenms/config.php
+
+- name: Initialise the librenms database
+  shell: "php build-base.php"
+  args:
+    chdir: /opt/librenms
+
+- name: Create librenms admin user
+  shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
+  args:
+    chdir: /opt/librenms
+
+- name: Validate the librenms install
+  shell: "php validate.php"
+  args:
+    chdir: /opt/librenms
+
+- name: Add localhost to monitored devices (Ignore errors wbout existing hosts)
+  shell: "php addhost.php localhost public v2c"
+  args:
+    chdir: /opt/librenms
+  ignore_errors: yes
+
+- name: Discover localhost
+  shell: "php discovery.php -h all"
+  args:
+    chdir: /opt/librenms

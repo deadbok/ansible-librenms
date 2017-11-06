@@ -1,0 +1,70 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  become: yes
+  with_items:
+    - fping
+
+- name: Add librenms group
+  group:
+    name: "{{ librenms_group }}"
+    state: present
+
+- name: Add librenms user
+  user:
+    name: "{{ librenms_user }}"
+    createhome: no
+    group: "{{ librenms_group }}"
+    groups: www-data
+    home: /opt/librenms
+    system: yes
+
+- name: Clone librenms from github
+  git:
+    repo: https://github.com/librenms/librenms.git
+    dest: /opt/librenms
+    depth: 1
+    version: "{{ librenms_version }}"
+
+- name: Create initial SQL setup statements
+  template:
+    src: librenms.sql.j2
+    dest: /tmp/librenms.sql
+
+- name: Create librenms database
+  mysql_db:
+    name: librenms
+    state: present
+  register: db_created
+
+- name: Import librenms database statements
+  mysql_db:
+    name: librenms
+    state: import
+    target: /tmp/librenms.sql
+  when: db_created.changed
+
+- name: Disable database strict mode
+  lineinfile:
+    name: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^{{ item }}'
+    insertafter: '^[mysqld]'
+    line: '{{ item }}'
+  with_items:
+    - 'innodb_file_per_table=1'
+    - 'sql-mode=""'
+    - 'lower_case_table_names=0'
+  notify:
+    - restart database service
+
+- name: setting suid bits on fping
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "u=rws,g=rx,o=rx"
+  with_items:
+    - /usr/bin/fping
+    - /usr/bin/fping6
