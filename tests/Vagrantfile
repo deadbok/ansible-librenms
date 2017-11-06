@@ -14,13 +14,22 @@ Vagrant.configure("2") do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "debian/stretch64"
 
+  # Disable synced folders, to not have the Debian default install to not enter
+  # an endless recursive dive starting from the symlink in test.
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
   # spin up vms
   vms = ['srv-librenms']
   vms.each do |server_name|
     config.vm.define server_name do |machine|
           machine.vm.hostname = server_name
+          # Map port 80 in the VM to localhost port 8080 when using VirtualBox
+          config.vm.provider "virtualbox" do |vb|
+              machine.vm.network "forwarded_port", guest: 80, host: 8080
+          end
     end
   end
+
 
 
   # define provisioning
