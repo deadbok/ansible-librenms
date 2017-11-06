@@ -1,3 +1,11 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  become: yes
+  with_items:
+    - fping
+
 - name: Add librenms group
   group:
     name: "{{ librenms_group }}"
@@ -50,3 +58,13 @@
     - 'lower_case_table_names=0'
   notify:
     - restart database service
+
+- name: setting suid bits on fping
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "u=rws,g=rx,o=rx"
+  with_items:
+    - /usr/bin/fping
+    - /usr/bin/fping6

@@ -6,7 +6,6 @@
   with_items:
     - acl
     - composer
-    - fping
     - git
     - graphviz
     - imagemagick
