@@ -20,6 +20,12 @@
     home: /opt/librenms
     system: yes
 
+- name: add www-data user to librenms group
+  user:
+    name: www-data
+    append: yes
+    groups: librenms
+
 - name: Clone librenms from github
   git:
     repo: https://github.com/librenms/librenms.git
