@@ -33,6 +33,7 @@
   include: install_librenms.yml
   become: yes
   when: install_librenms
+  tags: librenms
 
 - name: install snmp
   include: install_snmp.yml
@@ -103,3 +104,4 @@
   become_user: librenms
   become: yes
   when: update_librenms
+  tags: librenms
