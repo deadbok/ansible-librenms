@@ -21,3 +21,6 @@ monitor_location: Smith Residence, Washington, USA, Earth, C34
 
 # auto discovery network
 snmp_network: 127.0.0.1/32
+
+
+install_apache: True

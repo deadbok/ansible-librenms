@@ -5,33 +5,27 @@
   become: yes
   with_items:
     - acl
-    - apache2
     - composer
     - fping
     - git
     - graphviz
     - imagemagick
-    - libapache2-mod-php7.0
     - logrotate
     - mariadb-client
     - mariadb-server
     - mtr-tiny
     - nmap
-    - php7.0-cli
-    - php7.0-curl
-    - php7.0-gd
-    - php7.0-json
-    - php7.0-mcrypt
-    - php7.0-mysql
-    - php7.0-snmp
-    - php7.0-xml
-    - php7.0-zip
     - python-memcache
     - python-mysqldb
     - rrdtool
     - snmp
     - snmpd
     - whois
+
+- name: install apache and php
+  include: apache.yml
+  become: yes
+  when: install_apache
 
 - name: Add librenms group
   group:
@@ -91,64 +85,6 @@
     - 'lower_case_table_names=0'
   notify:
     - restart database service
-
-- name: Set time zone for php cli
-  template:
-    src: php-cli.ini.j2
-    dest: /etc/php/7.0/cli/php.ini
-  become: yes
-
-- name: Set time zone for php apache2
-  template:
-    src: php-apache2.ini.j2
-    dest: /etc/php/7.0/apache2/php.ini
-  become: yes
-
-- name: Disable apache modules.
-  apache2_module:
-    state: absent
-    name: "{{ item }}"
-  with_items:
-    - mpm_event
-  notify:
-    - restart apache2 service
-  become: yes
-
-- name: Enable apache modules.
-  apache2_module:
-    state: present
-    name: "{{ item }}"
-  with_items:
-    - php7.0
-    - mpm_prefork
-    - rewrite
-  notify:
-    - restart apache2 service
-  become: yes
-
-- name: Enale PHP modules.
-  shell: phpenmod mcrypt
-  notify:
-    - restart apache2 service
-  become: yes
-
-- name: Create apache2 site configuration
-  template:
-    src: librenms-apache.conf.j2
-    dest: /etc/apache2/sites-available/librenms.conf
-  become: yes
-
-- name: Enable librenms apache2 site
-  shell: a2ensite librenms.conf
-  notify:
-    - restart apache2 service
-  become: yes
-
-- name: Disable apache2 default site
-  shell: a2dissite 000-default
-  notify:
-    - restart apache2 service
-  become: yes
 
 - name: Create SNMPd configuration
   template:
