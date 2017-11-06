@@ -9,6 +9,8 @@ Ansible role to deploy LibreNMS on a Debian server.*
 
 **The following have default values, but should be customised:**
 
+* `librenms_version`: Version (branch or tag) of LibreNMS to clone from GitHub. **Default**:
+  *master*
 * `librenms_db_root_pass`: Password of the database root user. **Default**:
   *changeme*
 * `librenms_db_pass`: Password of the LibreNMS database user. **Default**:
@@ -21,6 +23,9 @@ Ansible role to deploy LibreNMS on a Debian server.*
   *librenms.localhost*
 * `librenms_timezone`: The time zone to use in LibreNMS (see [http://php.net/manual/en/timezones.php][b79731d2]). **Default**:
 *Europe/Copenhagen*
+* `snmp_network`: network to use in autodicovery. **Default**: 127.0.0.1/32
+`
+
 
   [b79731d2]: http://php.net/manual/en/timezones.php "http://php.net/manual/en/timezones.php"
 

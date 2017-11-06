@@ -1,0 +1,28 @@
+- name: Set time zone for php cli
+  template:
+    src: php-cli.ini.j2
+    dest: /etc/php/7.0/cli/php.ini
+
+- name: Set time zone for php apache2
+  template:
+    src: php-apache2.ini.j2
+    dest: /etc/php/7.0/apache2/php.ini
+
+- name: set system timezone
+  template:
+    src: etc_timezone.j2
+    dest: /etc/timezone
+    owner: root
+    group: root
+    mode: 0644
+  register: timezone_change
+
+- name: remove localtime file, if appl.
+  file:
+    dest: /etc/localtime
+    state: absent
+  when: timezone_change.changed
+
+- name: update dpkg config
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+  when: timezone_change.changed

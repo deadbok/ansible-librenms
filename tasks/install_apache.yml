@@ -1,0 +1,56 @@
+- name: Install dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - apache2
+    - libapache2-mod-php7.0
+    - php7.0-cli
+    - php7.0-curl
+    - php7.0-gd
+    - php7.0-json
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-snmp
+    - php7.0-xml
+    - php7.0-zip
+
+- name: Disable apache modules.
+  apache2_module:
+    state: absent
+    name: "{{ item }}"
+  with_items:
+    - mpm_event
+  notify:
+    - restart apache2 service
+
+- name: Enable apache modules.
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - php7.0
+    - mpm_prefork
+    - rewrite
+  notify:
+    - restart apache2 service
+
+- name: Enable PHP modules.
+  shell: phpenmod mcrypt
+  notify:
+    - restart apache2 service
+
+- name: Create apache2 site configuration
+  template:
+    src: librenms-apache.conf.j2
+    dest: /etc/apache2/sites-available/librenms.conf
+
+- name: Enable librenms apache2 site
+  shell: a2ensite librenms.conf
+  notify:
+    - restart apache2 service
+
+- name: Disable apache2 default site
+  shell: a2dissite 000-default
+  notify:
+    - restart apache2 service
