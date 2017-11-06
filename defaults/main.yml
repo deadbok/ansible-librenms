@@ -25,3 +25,4 @@ snmp_network: 127.0.0.1/32
 
 install_apache: True
 install_librenms: True
+update_librenms: True
