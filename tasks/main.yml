@@ -53,6 +53,7 @@
   git:
     repo: https://github.com/librenms/librenms.git
     dest: /opt/librenms
+    version: "{{ librenms_version }}"
   become: yes
 
 - name: Create initial SQL setup statements

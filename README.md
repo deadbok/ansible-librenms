@@ -9,6 +9,8 @@ Ansible role to deploy LibreNMS on a Debian server.*
 
 **The following have default values, but should be customised:**
 
+* `librenms_version`: Version (branch or tag) of LibreNMS to clone from GitHub. **Default**:
+  *master*
 * `librenms_db_root_pass`: Password of the database root user. **Default**:
   *changeme*
 * `librenms_db_pass`: Password of the LibreNMS database user. **Default**:
