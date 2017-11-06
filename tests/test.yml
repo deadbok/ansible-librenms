@@ -1,8 +1,32 @@
-- hosts: all
+- hosts: srv-librenms
   become: true
 
-  vars:
-  - snmp_network: 192.168.121.0/8
-  
   roles:
     - server-librenms
+
+- hosts: srv-snmpd
+  become: true
+
+  tasks:
+  - name: install snmpd
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - snmp
+    - snmpd
+
+  - name: update config
+    template:
+      src: snmpd.conf.j2
+      dest: /etc/snmp/snmpd.conf
+      owner: root
+      group: root
+    notify: restart snmpd
+
+
+  handlers:
+  - name: restart snmpd
+    systemd:
+      name: snmpd
+      state: restarted

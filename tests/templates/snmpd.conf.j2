@@ -1,0 +1,30 @@
+#  Listen for connections from the local system only
+#agentAddress  udp:127.0.0.1:161
+#  Listen for connections on all interfaces (both IPv4 *and* IPv6)
+agentAddress udp:161,udp6:[::1]:161
+
+view   all  included   .1
+
+rocommunity "{{ snmp_community }}"  localhost
+rocommunity "{{ snmp_community }}"  default  
+#  -V systemonly
+                                                 #  rocommunity6 is for IPv6
+# rocommunity6 public  default   -V systemonly
+
+                                                 #  Full access from an example network
+                                                 #     Adjust this network address to match your local
+                                                 #     settings, change the community string,
+                                                 #     and check the 'agentAddress' setting above
+#rocommunity secret  10.0.0.0/16
+
+###############################################################################
+#
+#  SYSTEM INFORMATION
+#
+
+#  Note that setting these values here, results in the corresponding MIB objects being 'read-only'
+#  See snmpd.conf(5) for more details
+sysLocation    Sitting on the Dock of the Bay
+sysContact     Me <me@example.org>
+                                                 # Application + End-to-End layers
+sysServices    72
