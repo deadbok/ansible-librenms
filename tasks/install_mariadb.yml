@@ -6,9 +6,16 @@
     - mariadb-client
     - mariadb-server
 
-- name: allow lower case table names
-  replace:
-    path: /etc/mysql/mariadb.conf.d/50-server.cnf
-    regexp: '^lower_case_table_names=0'
-    replace: 'lower_case_table_names=1'
-  notify: restart mariadb
+- name: Disable database strict mode
+  lineinfile:
+    name: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^{{ item }}'
+    insertafter: '^[mysqld]'
+    line: '{{ item }}'
+  with_items:
+    - 'innodb_file_per_table=1'
+    - 'sql-mode=""'
+    - 'lower_case_table_names=1'
+  notify:
+    - restart database service

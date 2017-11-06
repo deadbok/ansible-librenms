@@ -51,20 +51,6 @@
     target: /tmp/librenms.sql
   when: db_created.changed
 
-- name: Disable database strict mode
-  lineinfile:
-    name: /etc/mysql/mariadb.conf.d/50-server.cnf
-    state: present
-    regexp: '^{{ item }}'
-    insertafter: '^[mysqld]'
-    line: '{{ item }}'
-  with_items:
-    - 'innodb_file_per_table=1'
-    - 'sql-mode=""'
-    - 'lower_case_table_names=0'
-  notify:
-    - restart database service
-
 - name: setting suid bits on fping
   file:
     path: "{{ item }}"
