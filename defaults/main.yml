@@ -1,3 +1,5 @@
+librenms_version: master
+
 librenms_user: librenms
 librenms_group: librenms
 
