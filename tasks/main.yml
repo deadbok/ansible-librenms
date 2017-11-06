@@ -27,6 +27,11 @@
   become: yes
   when: install_apache
 
+- name: manage timezone
+  include: manage_tz.yml
+  become: yes
+  tag: update_tz
+
 - name: install librenms
   include: install_librenms.yml
   become: yes
