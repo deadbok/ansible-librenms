@@ -23,68 +23,14 @@
     - whois
 
 - name: install apache and php
-  include: isntall_apache.yml
+  include: install_apache.yml
   become: yes
   when: install_apache
 
-- name: Add librenms group
-  group:
-    name: "{{ librenms_group }}"
-    state: present
+- name: install librenms
+  include: install_librenms.yml
   become: yes
-
-- name: Add librenms user
-  user:
-    name: "{{ librenms_user }}"
-    createhome: no
-    group: "{{ librenms_group }}"
-    groups: www-data
-    home: /opt/librenms
-    system: yes
-  become: yes
-
-- name: Clone librenms from github
-  git:
-    repo: https://github.com/librenms/librenms.git
-    dest: /opt/librenms
-    depth: 1
-    version: "{{ librenms_version }}"
-  become: yes
-
-- name: Create initial SQL setup statements
-  template:
-    src: librenms.sql.j2
-    dest: /tmp/librenms.sql
-
-- name: Create librenms database
-  mysql_db:
-    name: librenms
-    state: present
-  become: yes
-  register: db_created
-
-- name: Import librenms database statements
-  mysql_db:
-    name: librenms
-    state: import
-    target: /tmp/librenms.sql
-  become: yes
-  when: db_created.changed
-
-- name: Disable database strict mode
-  lineinfile:
-    name: /etc/mysql/mariadb.conf.d/50-server.cnf
-    state: present
-    regexp: '^{{ item }}'
-    insertafter: '^[mysqld]'
-    line: '{{ item }}'
-  become: yes
-  with_items:
-    - 'innodb_file_per_table=1'
-    - 'sql-mode=""'
-    - 'lower_case_table_names=0'
-  notify:
-    - restart database service
+  when: install_librenms
 
 - name: Create SNMPd configuration
   template:
