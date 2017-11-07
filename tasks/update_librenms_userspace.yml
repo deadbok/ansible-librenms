@@ -47,6 +47,7 @@
   shell: "php validate.php"
   args:
     chdir: "{{librenms_dir}}"
+  when: librenms_git_result.changed
 
 - name: Add localhost to monitored devices (Ignore errors about existing hosts)
   shell: "php addhost.php localhost {{ snmp_community }} v2c"
