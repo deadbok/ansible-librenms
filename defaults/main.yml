@@ -14,6 +14,7 @@ librenms_timezone: Europe/Copenhagen
 librenms_server_name: librenms.localhost
 
 librenms_dir: /opt/librenms
+apache_librenms_site: librenms
 
 snmp_community: librenms
 
