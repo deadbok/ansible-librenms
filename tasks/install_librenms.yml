@@ -73,8 +73,6 @@
   failed_when: False
   register: apache_librenms_site_check
 
-- debug: var=apache_librenms_site_check
-
 - name: Enable librenms apache2 site
   command: "a2ensite {{ apache_librenms_site }}"
   when: apache_librenms_site_check.rc
