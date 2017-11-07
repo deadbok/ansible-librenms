@@ -48,7 +48,14 @@
   notify:
     - restart apache2 service
 
+- name: "Check for disables defaultsite: {{ apache_default_site}}"
+  command: "a2query -s {{ apache_default_site }} -q"
+  changed_when: False
+  failed_when: False
+  register: apache_default_check
+
 - name: Disable apache2 default site
-  shell: a2dissite 000-default
+  command: "a2dissite {{ apache_default_site }}"
+  when: not apache_default_check.rc
   notify:
     - restart apache2 service
