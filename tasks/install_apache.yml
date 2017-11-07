@@ -40,8 +40,6 @@
   register: php_mods_enabled
   changed_when: False
 
-- debug: var=php_mods_enabled.stdout
-
 - name: Enable PHP modules.
   command: phpenmod mcrypt
   when: "'mcrypt' not in php_mods_enabled.stdout_lines"
