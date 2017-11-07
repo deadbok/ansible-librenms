@@ -4,6 +4,16 @@
     src: config.php.j2
     dest: "{{librenms_dir}}/config.php"
 
+- name: Create rrd and logs directories
+  file:
+    group: "{{ librenms_group }}"
+    owner: "{{ librenms_user }}"
+    path: "{{librenms_dir}}/{{ item }}"
+    state: directory
+  with_items:
+    - logs
+    - rrd
+
 - name: Initialise the librenms database
   shell: "php build-base.php"
   args:
@@ -19,7 +29,7 @@
   args:
     chdir: "{{librenms_dir}}"
 
-- name: Add localhost to monitored devices (Ignore errors wbout existing hosts)
+- name: Add localhost to monitored devices (Ignore errors about existing hosts)
   shell: "php addhost.php localhost {{ snmp_community }} v2c"
   args:
     chdir: "{{librenms_dir}}"

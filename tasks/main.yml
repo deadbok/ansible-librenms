@@ -60,17 +60,6 @@
     remote_src: yes
   become: yes
 
-- name: Create rrd and logs directories
-  file:
-    group: "{{ librenms_group }}"
-    owner: "{{ librenms_user }}"
-    path: "{{librenms_dir}}/{{ item }}"
-    state: directory
-  become: yes
-  with_items:
-    - logs
-    - rrd
-
 - name: "Set librenms user as owner of {{librenms_dir}} and below"
   file:
     group: "{{ librenms_group }}"
