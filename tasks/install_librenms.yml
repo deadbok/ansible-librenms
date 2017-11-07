@@ -1,3 +1,4 @@
+# installing stuff related to librenms that requires admin privileges
 - name: Install dependencies
   apt:
     name: "{{ item }}"
@@ -17,7 +18,7 @@
     createhome: no
     group: "{{ librenms_group }}"
     groups: www-data
-    home: /opt/librenms
+    home: "{{librenms_dir}}"
     system: yes
 
 - name: add www-data user to librenms group
@@ -29,7 +30,7 @@
 - name: Clone librenms from github
   git:
     repo: https://github.com/librenms/librenms.git
-    dest: /opt/librenms
+    dest: "{{librenms_dir}}"
     depth: 1
     version: "{{ librenms_version }}"
 
