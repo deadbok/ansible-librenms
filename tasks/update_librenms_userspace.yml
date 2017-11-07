@@ -56,7 +56,8 @@
     chdir: "{{librenms_dir}}"
   when: "'localhost' not in librenms_host_list.stdout_lines"
 
-- name: Discover hosts
+- name: Discover hosts - disabled
   shell: "php discovery.php -h all"
   args:
     chdir: "{{librenms_dir}}"
+  when: False
