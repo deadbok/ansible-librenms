@@ -1,7 +1,7 @@
 - name: Install apache2 and dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - apache2
     - libapache2-mod-php7.0
