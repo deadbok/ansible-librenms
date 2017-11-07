@@ -30,10 +30,18 @@
     chdir: "{{librenms_dir}}"
   when: librenms_git_result.changed
 
+- name: get list of users
+  shell: "echo select username from users | mysql -ulibrenms -p{{ librenms_db_pass }} librenms"
+  changed_when: False
+  register: librenms_user_list
+
+- debug: var=librenms_user_list
+
 - name: Create librenms admin user
   shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
   args:
     chdir: "{{librenms_dir}}"
+  when: "librenms_admin_user not in librenms_user_list.stdout_lines"
 
 - name: Validate the librenms install
   shell: "php validate.php"
