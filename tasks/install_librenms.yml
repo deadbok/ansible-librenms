@@ -60,3 +60,13 @@
   with_items:
     - /usr/bin/fping
     - /usr/bin/fping6
+
+- name: Create apache2 site configuration
+  template:
+    src: librenms-apache.conf.j2
+    dest: /etc/apache2/sites-available/librenms.conf
+
+- name: Enable librenms apache2 site
+  shell: a2ensite librenms.conf
+  notify:
+    - restart apache2 service

@@ -1,3 +1,5 @@
+# tasks related to installing apache and php
+# all things specific to librenms is elsewhere
 - name: Install apache2 and dependencies
   apt:
     name: "{{ item }}"
@@ -43,16 +45,6 @@
 - name: Enable PHP modules.
   command: phpenmod mcrypt
   when: "'mcrypt' not in php_mods_enabled.stdout_lines"
-  notify:
-    - restart apache2 service
-
-- name: Create apache2 site configuration
-  template:
-    src: librenms-apache.conf.j2
-    dest: /etc/apache2/sites-available/librenms.conf
-
-- name: Enable librenms apache2 site
-  shell: a2ensite librenms.conf
   notify:
     - restart apache2 service
 
