@@ -1,9 +1,9 @@
 <VirtualHost *:80>
-  DocumentRoot /opt/librenms/html/
+  DocumentRoot {{librenms_dir}}/html/
   ServerName  "{{ librenms_server_name }}"
 
   AllowEncodedSlashes NoDecode
-  <Directory "/opt/librenms/html/">
+  <Directory "{{librenms_dir}}/html/">
     Require all granted
     AllowOverride All
     Options FollowSymLinks MultiViews

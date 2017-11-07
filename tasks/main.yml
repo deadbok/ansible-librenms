@@ -1,7 +1,7 @@
 - name: Install dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   become: yes
   with_items:
     - acl
@@ -27,6 +27,7 @@
   include: install_apache.yml
   become: yes
   when: install_apache
+  tags: apache
 
 - name: manage timezone
   include: manage_tz.yml
@@ -47,61 +48,50 @@
 
 - name: Add cron job
   copy:
-    src: /opt/librenms/librenms.nonroot.cron
+    src: "{{librenms_dir}}/librenms.nonroot.cron"
     dest: /etc/cron.d/librenms
     remote_src: yes
   become: yes
 
 - name: Add logrotate configuration
   copy:
-    src: /opt/librenms/misc/librenms.logrotate
+    src: "{{librenms_dir}}/misc/librenms.logrotate"
     dest: /etc/logrotate.d/librenms
     remote_src: yes
   become: yes
 
-- name: Create rrd and logs directories
+- name: "Set librenms user as owner of {{librenms_dir}} and below"
   file:
     group: "{{ librenms_group }}"
     owner: "{{ librenms_user }}"
-    path: "/opt/librenms/{{ item }}"
-    state: directory
-  become: yes
-  with_items:
-    - logs
-    - rrd
-
-- name: Set librenms user as owner of /opt/librenms and below
-  file:
-    group: "{{ librenms_group }}"
-    owner: "{{ librenms_user }}"
-    path: /opt/librenms
+    path: "{{librenms_dir}}"
     recurse: yes
     state: directory
   become: yes
 
 - name: Set acl permissions
   acl:
-    path: "{{ item }}"
+    path: "{{librenms_dir}}/{{ item }}"
     etype: group
     permissions: rwx
     default: yes
     state: present
   become: yes
   with_items:
-    - /opt/librenms/rrd
-    - /opt/librenms/logs
+    - rrd
+    - logs
 
 - name: Set acl permissions
   acl:
-    path: "{{ item }}"
+    path: "{{librenms_dir}}/{{ item }}"
     etype: group
     permissions: rwx
     recursive: yes
     state: present
   become: yes
   with_items:
-    - /opt/librenms/rrd
-    - /opt/librenms/logs
+    - rrd
+    - logs
 
 - name: update/create librenms userspace
   include: update_librenms_userspace.yml

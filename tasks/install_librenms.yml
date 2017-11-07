@@ -1,7 +1,8 @@
+# installing stuff related to librenms that requires admin privileges
 - name: Install dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   become: yes
   with_items:
     - fping
@@ -17,21 +18,21 @@
     createhome: no
     group: "{{ librenms_group }}"
     groups: www-data
-    home: /opt/librenms
+    home: "{{librenms_dir}}"
     system: yes
+
+- name: "create librenms base dir: {{ librenms_dir}}"
+  file:
+    path: "{{ librenms_dir}}"
+    state: directory
+    owner: "{{ librenms_user }}"
+    group: "{{ librenms_group }}"
 
 - name: add www-data user to librenms group
   user:
     name: www-data
     append: yes
     groups: librenms
-
-- name: Clone librenms from github
-  git:
-    repo: https://github.com/librenms/librenms.git
-    dest: /opt/librenms
-    depth: 1
-    version: "{{ librenms_version }}"
 
 - name: Create initial SQL setup statements
   template:
@@ -60,3 +61,20 @@
   with_items:
     - /usr/bin/fping
     - /usr/bin/fping6
+
+- name: Create apache2 site configuration
+  template:
+    src: librenms-apache.conf.j2
+    dest: "/etc/apache2/sites-available/{{ apache_librenms_site }}.conf"
+
+- name: "Check for disabled librenms site: {{ apache_librenms_site }}"
+  command: "a2query -s {{ apache_librenms_site }} -q"
+  changed_when: False
+  failed_when: False
+  register: apache_librenms_site_check
+
+- name: Enable librenms apache2 site
+  command: "a2ensite {{ apache_librenms_site }}"
+  when: apache_librenms_site_check.rc
+  notify:
+    - restart apache2 service

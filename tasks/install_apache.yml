@@ -1,7 +1,9 @@
+# tasks related to installing apache and php
+# all things specific to librenms is elsewhere
 - name: Install apache2 and dependencies
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - apache2
     - libapache2-mod-php7.0
@@ -35,22 +37,25 @@
   notify:
     - restart apache2 service
 
+- name: get php modules
+  command: "php -m"
+  register: php_mods_enabled
+  changed_when: False
+
 - name: Enable PHP modules.
-  shell: phpenmod mcrypt
+  command: phpenmod mcrypt
+  when: "'mcrypt' not in php_mods_enabled.stdout_lines"
   notify:
     - restart apache2 service
 
-- name: Create apache2 site configuration
-  template:
-    src: librenms-apache.conf.j2
-    dest: /etc/apache2/sites-available/librenms.conf
-
-- name: Enable librenms apache2 site
-  shell: a2ensite librenms.conf
-  notify:
-    - restart apache2 service
+- name: "Check for disables defaultsite: {{ apache_default_site}}"
+  command: "a2query -s {{ apache_default_site }} -q"
+  changed_when: False
+  failed_when: False
+  register: apache_default_check
 
 - name: Disable apache2 default site
-  shell: a2dissite 000-default
+  command: "a2dissite {{ apache_default_site }}"
+  when: not apache_default_check.rc
   notify:
     - restart apache2 service
