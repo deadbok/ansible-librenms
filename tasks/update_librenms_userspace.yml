@@ -7,8 +7,6 @@
     version: "{{ librenms_version }}"
   register: librenms_git_result
 
-- debug: var=librenms_git_result
-
 - name: Create librenms configuration
   template:
     src: config.php.j2
@@ -35,8 +33,6 @@
   changed_when: False
   register: librenms_user_list
 
-- debug: var=librenms_user_list
-
 - name: Create librenms admin user
   shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
   args:
@@ -49,13 +45,18 @@
     chdir: "{{librenms_dir}}"
   when: librenms_git_result.changed
 
+- name: get list of hosts
+  shell: "echo select hostname from devices | mysql -ulibrenms -p{{ librenms_db_pass }} librenms"
+  changed_when: False
+  register: librenms_host_list
+
 - name: Add localhost to monitored devices (Ignore errors about existing hosts)
   shell: "php addhost.php localhost {{ snmp_community }} v2c"
   args:
     chdir: "{{librenms_dir}}"
-  ignore_errors: yes
+  when: "'localhost' not in librenms_host_list.stdout_lines"
 
-- name: Discover localhost
+- name: Discover hosts
   shell: "php discovery.php -h all"
   args:
     chdir: "{{librenms_dir}}"
