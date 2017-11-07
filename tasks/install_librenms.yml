@@ -21,18 +21,18 @@
     home: "{{librenms_dir}}"
     system: yes
 
+- name: "create librenms base dir: {{ librenms_dir}}"
+  file:
+    path: "{{ librenms_dir}}"
+    state: directory
+    owner: "{{ librenms_user }}"
+    group: "{{ librenms_group }}"
+
 - name: add www-data user to librenms group
   user:
     name: www-data
     append: yes
     groups: librenms
-
-- name: Clone librenms from github
-  git:
-    repo: https://github.com/librenms/librenms.git
-    dest: "{{librenms_dir}}"
-    depth: 1
-    version: "{{ librenms_version }}"
 
 - name: Create initial SQL setup statements
   template:

@@ -1,4 +1,14 @@
 # taks related to librenms as librenms user
+- name: Clone librenms from github
+  git:
+    repo: https://github.com/librenms/librenms.git
+    dest: "{{librenms_dir}}"
+    depth: 1
+    version: "{{ librenms_version }}"
+  register: librenms_git_result
+
+- debug: var=librenms_git_result
+
 - name: Create librenms configuration
   template:
     src: config.php.j2
@@ -18,6 +28,7 @@
   shell: "php build-base.php"
   args:
     chdir: "{{librenms_dir}}"
+  when: librenms_git_result.changed
 
 - name: Create librenms admin user
   shell: "php adduser.php {{ librenms_admin_user }} {{ librenms_admin_pass }} 10 {{ monitor_admin_email }}"
