@@ -1,4 +1,4 @@
-Ansible role to deploy LibreNMS on a Debian server.*
+Ansible role to deploy LibreNMS on a Debian server.
 
 # Needed variables
 
@@ -17,8 +17,8 @@ Ansible role to deploy LibreNMS on a Debian server.*
   *changeme*
 * `librenms_admin_pass`: Initial password of the LibreNMS administrators
   account.. **Default**: *changeme*
-* `snmp_community`: Name of the SNMP community if devices that will get added to
-  libreNMS automatically.
+* `snmp_community`: Name of the SNMP community of devices that will get added to
+  libreNMS automatically. **Default**: *librenms*
 * `librenms_server_name`: The name of the LibreNMS server (used by apache). **Default**:
   *librenms.localhost*
 * `librenms_timezone`: The time zone to use in LibreNMS (see [http://php.net/manual/en/timezones.php][b79731d2]). **Default**:

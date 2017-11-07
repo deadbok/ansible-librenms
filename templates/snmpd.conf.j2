@@ -1,9 +1,7 @@
-# Change RANDOMSTRINGGOESHERE to your preferred SNMP community string
-com2sec readonly  default         "{{ snmp_community }}"
+agentAddress udp:161,udp6:[::1]:161
 
-group MyROGroup v2c        readonly
-view all    included  .1                               80
-access MyROGroup ""      any       noauth    exact  all    none   none
+rocommunity {{ snmp_community }} localhost
+rocommunity {{ snmp_community }} default
 
 syslocation "{{ monitor_location }}"
 syscontact "{{ monitor_admin_name}}" <"{{ monitor_admin_email }}">
