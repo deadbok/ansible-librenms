@@ -27,6 +27,7 @@
   include: install_apache.yml
   become: yes
   when: install_apache
+  tags: apache
 
 - name: manage timezone
   include: manage_tz.yml
