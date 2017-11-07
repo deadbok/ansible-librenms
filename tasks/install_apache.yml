@@ -35,8 +35,16 @@
   notify:
     - restart apache2 service
 
+- name: get php modules
+  command: "php -m"
+  register: php_mods_enabled
+  changed_when: False
+
+- debug: var=php_mods_enabled.stdout
+
 - name: Enable PHP modules.
-  shell: phpenmod mcrypt
+  command: phpenmod mcrypt
+  when: "'mcrypt' not in php_mods_enabled.stdout_lines"
   notify:
     - restart apache2 service
 
