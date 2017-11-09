@@ -1,4 +1,4 @@
-librenms_version: master
+librenms_version: 1.33.01
 
 librenms_user: librenms
 librenms_group: librenms

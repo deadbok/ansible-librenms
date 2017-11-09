@@ -46,6 +46,24 @@
   when: install_snmp
   tags: snmp
 
+- name: push key to librenms user
+  authorized_key:
+    user: librenms
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    state: present
+
+- name: update/create librenms userspace
+  include: update_librenms_userspace.yml
+  remote_user: librenms
+  when: update_librenms
+  tags: librenms
+
+- name: remove key from librenms user
+  authorized_key:
+    user: librenms
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    state: absent
+
 - name: Add cron job
   copy:
     src: "{{librenms_dir}}/librenms.nonroot.cron"
@@ -92,10 +110,3 @@
   with_items:
     - rrd
     - logs
-
-- name: update/create librenms userspace
-  include: update_librenms_userspace.yml
-  become_user: librenms
-  become: yes
-  when: update_librenms
-  tags: librenms

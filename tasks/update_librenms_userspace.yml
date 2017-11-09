@@ -1,11 +1,23 @@
 # taks related to librenms as librenms user
-- name: Clone librenms from github
-  git:
-    repo: https://github.com/librenms/librenms.git
-    dest: "{{librenms_dir}}"
-    depth: 1
-    version: "{{ librenms_version }}"
-  register: librenms_git_result
+
+# Can no longer clone into /opt/librenms as the directory is created earlier.
+- name: Fetch and unzip librenms
+  unarchive:
+    src: "https://github.com/librenms/librenms/archive/{{ librenms_version }}.tar.gz"
+    dest: /opt/
+    remote_src: yes
+    creates: /opt/librenms/html/index.php
+  register: librenms_fetch_result
+
+- name: "Move librenms to {{ librenms_dir }}"
+  shell: "mv /opt/librenms-{{ librenms_version }}/* {{ librenms_dir }}/."
+  when: librenms_fetch_result.changed
+
+- name: "Remove /opt/linbrenms-{{ librenms_version }}"
+  file:
+    path: "/opt/librenms-{{ librenms_version }}"
+    state: absent
+  when: librenms_fetch_result.changed
 
 - name: Create librenms configuration
   template:
@@ -26,7 +38,7 @@
   shell: "php build-base.php"
   args:
     chdir: "{{librenms_dir}}"
-  when: librenms_git_result.changed
+  when: librenms_fetch_result.changed
 
 - name: get list of users
   shell: "echo select username from users | mysql -ulibrenms -p{{ librenms_db_pass }} librenms"
@@ -43,7 +55,7 @@
   shell: "php validate.php"
   args:
     chdir: "{{librenms_dir}}"
-  when: librenms_git_result.changed
+  when: librenms_fetch_result.changed
 
 - name: get list of hosts
   shell: "echo select hostname from devices | mysql -ulibrenms -p{{ librenms_db_pass }} librenms"
