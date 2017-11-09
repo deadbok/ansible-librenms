@@ -1,6 +1,4 @@
 # taks related to librenms as librenms user
-
-# Can no longer clone into /opt/librenms as the directory is created earlier.
 - name: Fetch and unzip librenms
   unarchive:
     src: "https://github.com/librenms/librenms/archive/{{ librenms_version }}.tar.gz"
@@ -62,7 +60,7 @@
   changed_when: False
   register: librenms_host_list
 
-- name: Add localhost to monitored devices (Ignore errors about existing hosts)
+- name: Add localhost to monitored devices
   shell: "php addhost.php localhost {{ snmp_community }} v2c"
   args:
     chdir: "{{librenms_dir}}"
