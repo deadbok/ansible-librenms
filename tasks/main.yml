@@ -51,6 +51,7 @@
     user: librenms
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
     state: present
+  tags: librenms
 
 - name: update/create librenms userspace
   include: update_librenms_userspace.yml
@@ -63,6 +64,7 @@
     user: librenms
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
     state: absent
+  tags: librenms
 
 - name: Add cron job
   copy:
