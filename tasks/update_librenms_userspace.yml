@@ -2,13 +2,13 @@
 - name: Fetch and unzip librenms
   unarchive:
     src: "https://github.com/librenms/librenms/archive/{{ librenms_version }}.tar.gz"
-    dest: /opt/
+    dest: /tmp/
     remote_src: yes
     creates: /opt/librenms/html/index.php
   register: librenms_fetch_result
 
 - name: "Move librenms to {{ librenms_dir }}"
-  shell: "mv /opt/librenms-{{ librenms_version }}/* {{ librenms_dir }}/."
+  shell: "mv /tmp/librenms-{{ librenms_version }}/* {{ librenms_dir }}/."
   when: librenms_fetch_result.changed
 
 - name: "Remove /opt/linbrenms-{{ librenms_version }}"

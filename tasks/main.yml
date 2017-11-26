@@ -51,6 +51,7 @@
     user: librenms
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
     state: present
+  become: yes
 
 - name: update/create librenms userspace
   include: update_librenms_userspace.yml
